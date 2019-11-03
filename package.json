@@ -4,6 +4,8 @@
   "description": "A simple Apollo Graphql NodeJS express server",
   "main": "index.js",
   "scripts": {
+    "build": "babel src --out-dir dist",
+    "serve": "node dist/server.js",
     "dev": "nodemon --exec babel-node src/server.js",
     "js": "**/*.{js,jsx,ts,tsx}",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\"",
