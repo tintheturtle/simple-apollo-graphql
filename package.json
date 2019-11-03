@@ -4,12 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/server.js",
+    "dev": "nodemon --exec babel-node src/server.js",
     "js": "**/*.{js,jsx,ts,tsx}",
     "lint": "eslint \"**/*.{js,jsx,ts,tsx}\"",
-    "lint:fix": "npm run lint --fix",
-    "stylelint": "stylelint \"**/*.{css,scss,sass}\"",
-    "stylelint:fix": "stylelint \"**/*.{css,scss,sass}\" --fix"
+    "lint:fix": "npm run lint --fix"
   },
   "author": "",
   "license": "ISC",
@@ -33,6 +31,10 @@
     "helmet": "^3.21.2"
   },
   "devDependencies": {
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.6.4",
+    "@babel/node": "^7.6.3",
+    "@babel/preset-env": "^7.6.3",
     "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-config-prettier": "^6.5.0",

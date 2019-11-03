@@ -1,13 +1,17 @@
-const dotenv = require('dotenv')
-const express = require('express')
-const helmet = require('helmet')
-const cors = require('cors')
-const { ApolloServer } = require('apollo-server-express')
-const bodyParser = require('body-parser')
-const { createServer } = require('http')
+import dotenv from 'dotenv'
+import express from 'express'
+import helmet from 'helmet'
+import cors from 'cors'
+import { ApolloServer } from 'apollo-server-express'
+import bodyParser from 'body-parser'
+import { createServer } from 'http'
 
-const resolvers = './resolvers'
-const typeDefs = './schemas'
+// import b from './resolvers/resolvers'
+// import resolvers from './resolvers/resolvers'
+// import typeDefs from './schemas/schemas'
+
+import resolvers from './resolvers'
+import typeDefs from './schemas'
 
 dotenv.config()
 
