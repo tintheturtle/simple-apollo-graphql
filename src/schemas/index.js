@@ -3,6 +3,7 @@ import { gql } from 'apollo-server-express'
 const typeDefs = gql`
   type Query {
     findBlog(id: ID!): Blog
+    findBlogs: [Blog]
   }
 
   type Mutation {
@@ -14,6 +15,7 @@ const typeDefs = gql`
     title: String
     author: String
     body: String
+    date: String
   }
 
   input BlogInput {

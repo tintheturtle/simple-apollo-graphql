@@ -10,6 +10,13 @@ const Query = {
       throw new ApolloError(err)
     }
   },
+  findBlogs: async () => {
+    try {
+      return await Blog.find({})
+    } catch (err) {
+      throw new ApolloError(err)
+    }
+  },
 }
 
 const Mutation = {
