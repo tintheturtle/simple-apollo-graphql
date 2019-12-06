@@ -1,14 +1,24 @@
 import mongoose from 'mongoose'
 
-const { Schema, model } = mongoose
-
+const { Schema } = mongoose
 const UserSchema = new Schema({
-  userName: String,
-  confirmationToken: String,
-  confirmed: { type: Boolean, default: false },
-  email: String,
-  webToken: { type: String, default: null },
+  email: {
+    type: String,
+    unique: true,
+  },
+  userHash: {
+    type: String,
+  },
+  accessToken: {
+    type: String,
+  },
+  verificationStatus: {
+    type: Boolean,
+    default: false,
+  },
+  confirmationCode: {
+    type: String,
+  },
 })
 
-const User = model('User', UserSchema)
-export { User, UserSchema }
+export default mongoose.model('User', UserSchema)
