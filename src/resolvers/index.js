@@ -5,8 +5,8 @@ import cryptoRandomString from 'crypto-random-string'
 import User from '../schemas/User'
 
 AWS.config.update({
-  accessKeyId: 'AKIAI7EOQ2Y7OQOBSFRA',
-  secretAccessKey: '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',
+  accessKeyId: 'newKey',
+  secretAccessKey: 'someKey',
   region: 'us-east-1',
 })
 
@@ -33,20 +33,17 @@ const Mutation = {
       }
       // Initialize hash, access token, and access code to be entered
       const userHash = await cryptoRandomString({ length: 15 })
-      const accessToken = jwt.sign({ email }, 'secretlyPrivateKey', { expiresIn: '1y' })
       const accessCode = await cryptoRandomString({ length: 6 })
-      const verificationStatus = false
       // Create a new user and save it
       const newUser = new User({
         email,
         userHash,
-        accessToken,
-        verificationStatus,
         confirmationCode: accessCode,
       })
       newUser.save()
-      // Send email with access code using hash
-      const params = {
+      // Send email with unique hash link
+      const ses = new AWS.SES({ apiVersion: '2010-12-01' })
+      const params1 = {
         Destination: {
           ToAddresses: [newUser.email], // Email address/addresses that you want to send your email
         },
@@ -58,7 +55,7 @@ const Mutation = {
               Data: `<html><body>
                 <h3>Hello ${newUser.email} </h3>
                 <p style='color:red'></p> 
-                <p>Please confirm your account by entering this code: ${newUser.confirmationCode} through this link 
+                <p>Please confirm your account by going to this
                 <a href='https://lovebox.plus/?token=${newUser.userHash}&email=${newUser.email}'>link</a>
                 </p>
                 </body></html>`,
@@ -75,10 +72,46 @@ const Mutation = {
         },
         Source: 'tintheturtle@gmail.com',
       }
-      const ses = new AWS.SES({ apiVersion: '2010-12-01' })
-      const sendEmail = ses.sendEmail(params).promise()
+      const sendEmail1 = ses.sendEmail(params1).promise()
+      // Send email with access code
+      const params2 = {
+        Destination: {
+          ToAddresses: [newUser.email], // Email address/addresses that you want to send your email
+        },
+        Message: {
+          Body: {
+            Html: {
+              // HTML Format of the email
+              Charset: 'UTF-8',
+              Data: `<html><body>
+                <h3>Hello ${newUser.email} </h3>
+                <p style='color:red'></p> 
+                <p>Please confirm your account by entering this code: ${newUser.confirmationCode} at the link sent before.
+                </p>
+                </body></html>`,
+            },
+            Text: {
+              Charset: 'UTF-8',
+              Data: 'Test email',
+            },
+          },
+          Subject: {
+            Charset: 'UTF-8',
+            Data: 'Your VES-6 Account Registration Confirmation',
+          },
+        },
+        Source: 'tintheturtle@gmail.com',
+      }
+      const sendEmail2 = ses.sendEmail(params2).promise()
 
-      sendEmail
+      sendEmail1
+        .then(data => {
+          console.log('email submitted to SES', data)
+        })
+        .catch(error => {
+          console.log(error)
+        })
+      sendEmail2
         .then(data => {
           console.log('email submitted to SES', data)
         })
@@ -88,7 +121,7 @@ const Mutation = {
 
       // Return verification status
       return {
-        verificationStatus,
+        verificationStatus: false,
       }
     } catch (err) {
       throw new ApolloError(err)
@@ -99,6 +132,7 @@ const Mutation = {
     try {
       // Checks if user exists
       const user = await User.findOne({ userHash: args.userHash })
+      const { email } = user.email
       if (!user) {
         throw new ApolloError('User does not exist in the database. Please register an account')
       }
@@ -106,12 +140,13 @@ const Mutation = {
       if (args.accessCode !== user.confirmationCode) {
         throw new ApolloError('Incorrect access code provided.')
       }
-      // Verify jwt and set verification status to true
-      jwt.verify(user.accessToken, 'secretlyPrivateKey')
-      // Sending token and updating user
-      const { accessToken } = user.accessToken
-      console.log(accessToken)
+      // Initializes user information
+      const accessToken = jwt.sign({ email }, 'secretlyPrivateKey', { expiresIn: '1y' })
+
+      // Saves variables to user
+      user.accessToken = accessToken
       user.verificationStatus = true
+      // Sending token and updating user
       user.save()
       // Return token as a string
       return { token: accessToken }
@@ -120,13 +155,12 @@ const Mutation = {
     }
   },
 
-  login: async (root, args, context, req) => {
+  login: async (root, args) => {
     try {
       // Retrieve token from local storage stored on browser
-      const accessToken = req.headers.authorization
-
+      const { email } = args.email
       // Find user using token
-      const user = await User.findOne({ accessToken })
+      const user = await User.findOne({ email })
       if (!user) {
         throw new ApolloError('Please create an account.')
       }
@@ -134,8 +168,6 @@ const Mutation = {
         throw new ApolloError('Please verify your account.')
       }
       // Verify token
-      // const token = jwt.verify(accessToken,'secretlyPrivateKey')
-      // Return signInStatus as true
       return {
         signInStatus: true,
       }

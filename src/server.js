@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 import express from 'express'
-import { helmet } from 'helmet'
+import helmet from 'helmet'
 import jwt from 'jsonwebtoken'
 import cors from 'cors'
 import { ApolloServer } from 'apollo-server-express'

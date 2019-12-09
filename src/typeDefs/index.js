@@ -7,7 +7,7 @@ const typeDefs = gql`
   type Mutation {
     userCreation(email: String!): userCreationBoolean
     confirmation(userHash: String!, accessCode: String!): confirmationBoolean
-    login: loginBoolean
+    login(email: String!): loginString
     loginDifferentDevice(email: String!): differentDevice
   }
   type userCreationBoolean {
@@ -16,8 +16,8 @@ const typeDefs = gql`
   type confirmationBoolean {
     token: String
   }
-  type loginBoolean {
-    signInStatus: Boolean
+  type loginString {
+    newAccessCode: String
   }
   type differentDevice {
     differentDevice: Boolean
