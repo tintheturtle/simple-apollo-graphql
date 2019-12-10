@@ -4,14 +4,14 @@ const { Schema } = mongoose
 
 // Payment Schema
 const PaymentSchema = new Schema({
-  email: String,
-  referenceID: { type: String, unique: true },
+  emailPayment: String,
+  reference: { type: String },
   paymentStatus: Boolean,
 })
 
 // Events Schema
 const EventSchema = new Schema({
-  email: { type: String, unique: true },
+  emailEvent: { type: String },
   year: { type: Number },
   family_questions: [{ type: String }],
 })
@@ -23,10 +23,10 @@ const PastEventSchema = new Schema({
 
 // Profiles Schema
 const ProfileSchema = new Schema({
-  email: String,
+  emailProfile: String,
   confirmationCode: String,
   userHash: String,
-  verificationStatus: Boolean,
+  verificationStatus: { type: Boolean, default: false },
 })
 
 // Permissions Schema
@@ -38,7 +38,7 @@ const PermissionSchema = new Schema({
 
 // Finalized User Schema
 const UserSchema = new Schema({
-  _id: String,
+  emailRoot: String,
   profile: ProfileSchema,
   permission: PermissionSchema,
   event: EventSchema,

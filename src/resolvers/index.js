@@ -24,100 +24,105 @@ const Mutation = {
   userCreation: async (root, args) => {
     try {
       // Checks if user exists already
-      const { email } = args.email
-      const user = await User.findOne({ email })
+      const mail = args.email
+      const user = await User.findOne({ emailRoot: mail })
       if (user) {
         return {
-          verificationStatus: user.verificationStatus,
+          verificationStatus: user.profile.verificationStatus,
         }
       }
+
       // Initialize hash, access token, and access code to be entered
       const userHash = await cryptoRandomString({ length: 15 })
       const accessCode = await cryptoRandomString({ length: 6 })
       // Create a new user and save it
+
       const newUser = new User({
-        email,
-        userHash,
-        confirmationCode: accessCode,
+        emailRoot: mail,
+        profile: {
+          emailProfile: mail,
+          confirmationCode: accessCode,
+          userHash,
+        },
       })
       newUser.save()
       // Send email with unique hash link
-      const ses = new AWS.SES({ apiVersion: '2010-12-01' })
-      const params1 = {
-        Destination: {
-          ToAddresses: [newUser.email], // Email address/addresses that you want to send your email
-        },
-        Message: {
-          Body: {
-            Html: {
-              // HTML Format of the email
-              Charset: 'UTF-8',
-              Data: `<html><body>
-                <h3>Hello ${newUser.email} </h3>
-                <p style='color:red'></p> 
-                <p>Please confirm your account by going to this
-                <a href='https://lovebox.plus/?token=${newUser.userHash}&email=${newUser.email}'>link</a>
-                </p>
-                </body></html>`,
-            },
-            Text: {
-              Charset: 'UTF-8',
-              Data: 'Test email',
-            },
-          },
-          Subject: {
-            Charset: 'UTF-8',
-            Data: 'Your VES-6 Account Registration Confirmation',
-          },
-        },
-        Source: 'tintheturtle@gmail.com',
-      }
-      const sendEmail1 = ses.sendEmail(params1).promise()
-      // Send email with access code
-      const params2 = {
-        Destination: {
-          ToAddresses: [newUser.email], // Email address/addresses that you want to send your email
-        },
-        Message: {
-          Body: {
-            Html: {
-              // HTML Format of the email
-              Charset: 'UTF-8',
-              Data: `<html><body>
-                <h3>Hello ${newUser.email} </h3>
-                <p style='color:red'></p> 
-                <p>Please confirm your account by entering this code: ${newUser.confirmationCode} at the link sent before.
-                </p>
-                </body></html>`,
-            },
-            Text: {
-              Charset: 'UTF-8',
-              Data: 'Test email',
-            },
-          },
-          Subject: {
-            Charset: 'UTF-8',
-            Data: 'Your VES-6 Account Registration Confirmation',
-          },
-        },
-        Source: 'tintheturtle@gmail.com',
-      }
-      const sendEmail2 = ses.sendEmail(params2).promise()
+      // const ses = new AWS.SES({ apiVersion: '2010-12-01' })
+      // const params1 = {
+      //   Destination: {
+      //     ToAddresses: [newUser.email], // Email address/addresses that you want to send your email
+      //   },
+      //   Message: {
+      //     Body: {
+      //       Html: {
+      //         // HTML Format of the email
+      //         Charset: 'UTF-8',
+      //         Data: `<html><body>
+      //           <h3>Hello ${newUser.email}</h3>
+      //           <p style='color:red'></p>
+      //           <p>Please confirm your account by going to this
+      //           <a href='https://lovebox.plus/?token=${newUser.userHash}&email=${newUser.email}'>link</a>
+      //           </p>
+      //           </body></html>`,
+      //       },
+      //       Text: {
+      //         Charset: 'UTF-8',
+      //         Data: 'Test email',
+      //       },
+      //     },
+      //     Subject: {
+      //       Charset: 'UTF-8',
+      //       Data: 'Your VES-6 Account Registration Confirmation',
+      //     },
+      //   },
+      //   Source: 'tintheturtle@gmail.com',
+      // }
+      // const sendEmail1 = ses.sendEmail(params1).promise()
+      // // Send email with access code
+      // const params2 = {
+      //   Destination: {
+      //     ToAddresses: [newUser.email], // Email address/addresses that you want to send your email
+      //   },
+      //   Message: {
+      //     Body: {
+      //       Html: {
+      //         // HTML Format of the email
+      //         Charset: 'UTF-8',
+      //         Data: `<html><body>
+      //           <h3>Hello ${newUser.email} </h3>
+      //           <p style='color:red'></p>
+      //           <p>Please confirm your account by entering this code: ${newUser.confirmationCode} at the link sent before.
+      //           </p>
+      //           </body></html>`,
+      //       },
+      //       Text: {
+      //         Charset: 'UTF-8',
+      //         Data: 'Test email',
+      //       },
+      //     },
+      //     Subject: {
+      //       Charset: 'UTF-8',
+      //       Data: 'Your VES-6 Account Registration Confirmation',
+      //     },
+      //   },
+      //   Source: 'tintheturtle@gmail.com',
+      // }
+      // const sendEmail2 = ses.sendEmail(params2).promise()
 
-      sendEmail1
-        .then(data => {
-          console.log('email submitted to SES', data)
-        })
-        .catch(error => {
-          console.log(error)
-        })
-      sendEmail2
-        .then(data => {
-          console.log('email submitted to SES', data)
-        })
-        .catch(error => {
-          console.log(error)
-        })
+      // sendEmail1
+      //   .then(data => {
+      //     console.log('email submitted to SES', data)
+      //   })
+      //   .catch(error => {
+      //     console.log(error)
+      //   })
+      // sendEmail2
+      //   .then(data => {
+      //     console.log('email submitted to SES', data)
+      //   })
+      //   .catch(error => {
+      //     console.log(error)
+      //   })
 
       // Return verification status
       return {
@@ -130,23 +135,27 @@ const Mutation = {
 
   confirmation: async (root, args) => {
     try {
+      // Turning args into variables
+      const { accessCode } = args.accessCode
       // Checks if user exists
-      const user = await User.findOne({ userHash: args.userHash })
-      const { email } = user.email
+      const { userHash } = args.userHash
+      const user = await User.findOne({ 'profile.userHash': userHash })
       if (!user) {
         throw new ApolloError('User does not exist in the database. Please register an account')
       }
-      // Checks if the passcode entered is correct
-      if (args.accessCode !== user.confirmationCode) {
+      // Checking verification status
+      if (user.profile.verificationStatus) {
+        throw new ApolloError('User has already been verified.')
+      }
+      // Checking if passcode entered is correct
+      if (user.profile.confirmationCode !== accessCode) {
         throw new ApolloError('Incorrect access code provided.')
       }
       // Initializes user information
+      const email = user.emailRoot
       const accessToken = jwt.sign({ email }, 'secretlyPrivateKey', { expiresIn: '1y' })
-
-      // Saves variables to user
-      user.accessToken = accessToken
-      user.verificationStatus = true
-      // Sending token and updating user
+      // Change verificationStatus to true
+      user.profile.verificationStatus = true
       user.save()
       // Return token as a string
       return { token: accessToken }
