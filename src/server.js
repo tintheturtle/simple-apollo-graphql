@@ -43,7 +43,7 @@ const server = new ApolloServer({
     try {
       authToken = req.headers.authorization
       if (authToken) {
-        user = jwt.verify(authToken.replace('Bearer ', ''), process.env.JWT_SECRET)
+        user = jwt.verify(authToken.replace('Bearer ', ''), 'secretlyPrivateKey')
       }
     } catch (e) {
       console.warn(`Unable to authenticate using auth token: ${authToken}`)

@@ -13,7 +13,7 @@ const PaymentSchema = new Schema({
 const EventSchema = new Schema({
   emailEvent: { type: String },
   year: { type: Number },
-  family_questions: [{ type: String }],
+  family_questions: [{ question: String, answer: String }],
 })
 
 // PastEvents Schema
